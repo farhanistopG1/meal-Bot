@@ -1,0 +1,20 @@
+# MealBot V2
+
+## Home
+
+- [ ] Prevent archive if already archived
+- [ ] Prevent activate if already active
+- [ ] Rename Home
+- [ ] Only Admin can rename
+- [ ] Soft delete
+- [ ] Audit log
+
+## Resident
+
+- [ ] Prevent duplicate residents
+- [ ] Transfer resident
+
+## Cook
+
+- [ ] Replace cook
+- [ ] Cook history
