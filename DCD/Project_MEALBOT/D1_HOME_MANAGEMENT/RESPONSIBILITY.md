@@ -56,3 +56,9 @@ Rules:
 - Better error messages.
 - Soft delete.
 - Notifications.
+- Rename Home.
+- Transfer a Resident between Homes.
+- Cook assignment history.
+- Explicit errors for repeated activation or archival attempts.
+- Administrative control for Home renaming.
+- Stronger duplicate-resident protection at the domain boundary.

@@ -143,3 +143,5 @@ Vote count.
 The poll from which the decision came.
 A MealPlan can only exist after its poll is closed.
 
+
+

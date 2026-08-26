@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.body import Resident
-from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import database as home_database
+from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.d1business_obr import Resident
+from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import d1database as home_database
 from DCD.Project_MEALBOT.D2_MEAL_PLANNING.d2business_obr import MealPreference
-from DCD.Project_MEALBOT.D2_MEAL_PLANNING import database as meal_preference_database
+from DCD.Project_MEALBOT.D2_MEAL_PLANNING import d2database as meal_preference_database
 
 
 def configure_meal_preference(

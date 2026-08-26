@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.body import Resident
+from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.d1business_obr import Resident
 
 
 class MealPreference:
@@ -27,6 +27,9 @@ class MealPreference:
         if not isinstance(resident, Resident):
             raise ValueError("A valid Resident is required.")
 
+        self.id = None
+        self.version = None
+        self.created_at = None
         self.resident = resident
         self.fav_meals = self._validate_fav_meals(fav_meals)
 

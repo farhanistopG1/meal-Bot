@@ -1,6 +1,6 @@
 from __future__ import annotations
-from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.body import Home, Resident, Cook
-from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import database
+from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.d1business_obr import Home, Resident, Cook
+from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import d1database
 
 
 def configure_home(
@@ -16,7 +16,7 @@ def configure_home(
     home.add_resident(resident)
     cook = Cook(cook_name, cook_number)
     home.assign_cook(cook)
-    database.save(home)
+    d1database.save(home)
 
     return home
 
@@ -31,6 +31,6 @@ home = configure_home(
     cook_number="+918123912521"
 )
 
-print(database.list_homes())
+print(d1database.list_homes())
 '''
 #=============
