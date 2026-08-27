@@ -5,6 +5,7 @@ from datetime import date
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+
 from organs import (
     add_resident_to_home as add_resident_to_home_workflow,
     close_daily_meal_poll_for_home,
@@ -16,23 +17,22 @@ from organs import (
 )
 
 
-app = FastAPI(
-    title="MealBot API",
-    version="1.0.0",
-    description="API boundary for the MealBot daily meal coordination system.",
-)
+app = FastAPI()
 
 
-# ============================================================
-# REQUEST MODELS
-# ============================================================
-
-class CreateHomeRequest(BaseModel):
+class HomeRequest(BaseModel):
     home_name: str
     resident_name: str
     resident_number: str
     cook_name: str
     cook_number: str
+
+
+class MealRequest(BaseModel):
+    resident_phone: str
+    fav_meals: list[str]
+    protein_preference: str
+    spice_preference: str
 
 
 class AddResidentRequest(BaseModel):
@@ -41,37 +41,24 @@ class AddResidentRequest(BaseModel):
     resident_number: str
 
 
-class SaveMealPreferenceRequest(BaseModel):
-    resident_phone: str
-    fav_meals: list[str]
-    protein_preference: str
-    spice_preference: str
-
-
-class CreatePollRequest(BaseModel):
+class DailyMealPollRequest(BaseModel):
     anchor_resident_phone: str
     meal_date: date | None = None
 
 
-class VoteRequest(BaseModel):
+class MealVoteRequest(BaseModel):
     resident_phone: str
     meal_date: date
     selected_meal: str
 
 
-class ClosePollRequest(BaseModel):
+class CloseDailyMealPollRequest(BaseModel):
     anchor_resident_phone: str
     meal_date: date
 
 
-# ============================================================
-# RESPONSE BUILDERS
-# ============================================================
-
 def _poll_response(poll):
     return {
-        "poll_id": poll.id,
-        "home_id": poll.home.id,
         "home_name": poll.home.name,
         "meal_date": poll.meal_date,
         "status": poll.status,
@@ -82,39 +69,18 @@ def _poll_response(poll):
 
 def _summary_response(summary):
     return {
-        "summary_id": summary.id,
-        "home_id": summary.home.id,
         "home_name": summary.home.name,
         "meal_date": summary.meal_date,
         "winning_meal": summary.winning_meal,
         "vote_counts": summary.vote_counts,
         "total_votes": summary.total_votes,
-        "cook_name": (
-            summary.home.cook.name
-            if summary.home.cook
-            else None
-        ),
+        "cook_name": summary.home.cook.name,
         "created_at": summary.created_at,
     }
 
 
-def _meal_plan_response(meal_plan):
-    return {
-        "meal_plan_id": meal_plan.id,
-        "home_id": meal_plan.home.id,
-        "meal_date": meal_plan.meal_date,
-        "meal": meal_plan.meal,
-        "cook_name": meal_plan.cook.name,
-        "vote_count": meal_plan.vote_count,
-    }
-
-
-# ============================================================
-# D1 — HOME MANAGEMENT
-# ============================================================
-
-@app.post("/api/v1/homes")
-def create_home(request: CreateHomeRequest):
+@app.post("/homes")
+def create_home(request: HomeRequest):
     try:
         home = create_home_workflow(
             home_name=request.home_name,
@@ -125,15 +91,11 @@ def create_home(request: CreateHomeRequest):
         )
 
         return {
-            "home_id": home.id,
             "home_name": home.name,
+            "home_id": home.id,
             "status": home.status,
             "resident_count": len(home.residents),
-            "cook_name": (
-                home.cook.name
-                if home.cook
-                else None
-            ),
+            "cook_name": home.cook.name if home.cook else None,
         }
 
     except ValueError as error:
@@ -143,7 +105,7 @@ def create_home(request: CreateHomeRequest):
         ) from error
 
 
-@app.post("/api/v1/homes/residents")
+@app.post("/homes/residents")
 def add_resident_to_home(
     request: AddResidentRequest,
 ):
@@ -167,20 +129,15 @@ def add_resident_to_home(
         ) from error
 
     return {
-        "resident_id": resident.id,
         "resident_name": resident.name,
         "resident_phone": resident.phone,
         "status": resident.status,
     }
 
 
-# ============================================================
-# D2 — MEAL PREFERENCES
-# ============================================================
-
-@app.post("/api/v1/residents/meal-preferences")
-def save_meal_preference(
-    request: SaveMealPreferenceRequest,
+@app.post("/meal_preference")
+def create_meal_preference(
+    request: MealRequest,
 ):
     try:
         meal_preference = create_meal_preference_workflow(
@@ -203,8 +160,6 @@ def save_meal_preference(
         ) from error
 
     return {
-        "preference_id": meal_preference.id,
-        "resident_id": meal_preference.resident.id,
         "resident_name": meal_preference.resident.name,
         "resident_phone": meal_preference.resident.phone,
         "fav_meals": sorted(
@@ -216,17 +171,14 @@ def save_meal_preference(
         "spice_preference": (
             meal_preference.spice_preference
         ),
+        "preference_id": meal_preference.id,
         "version": meal_preference.version,
     }
 
 
-# ============================================================
-# D3 — DAILY MEAL COORDINATION
-# ============================================================
-
-@app.post("/api/v1/homes/meal-polls")
+@app.post("/daily-meal-polls")
 def create_daily_meal_poll(
-    request: CreatePollRequest,
+    request: DailyMealPollRequest,
 ):
     try:
         poll = create_daily_meal_poll_workflow(
@@ -251,9 +203,9 @@ def create_daily_meal_poll(
     return _poll_response(poll)
 
 
-@app.post("/api/v1/meal-polls/votes")
+@app.post("/daily-meal-polls/votes")
 def cast_daily_meal_vote(
-    request: VoteRequest,
+    request: MealVoteRequest,
 ):
     try:
         poll = vote_on_daily_meal_poll(
@@ -277,9 +229,9 @@ def cast_daily_meal_vote(
     return _poll_response(poll)
 
 
-@app.post("/api/v1/meal-polls/close")
+@app.post("/daily-meal-polls/close")
 def close_daily_meal_poll(
-    request: ClosePollRequest,
+    request: CloseDailyMealPollRequest,
 ):
     try:
         summary, meal_plan = (
@@ -304,17 +256,18 @@ def close_daily_meal_poll(
         ) from error
 
     return {
-        "summary": _summary_response(summary),
-        "meal_plan": _meal_plan_response(meal_plan),
+        **_summary_response(summary),
+        "meal_plan": {
+            "meal": meal_plan.meal,
+            "meal_date": meal_plan.meal_date,
+            "cook_name": meal_plan.cook.name,
+            "vote_count": meal_plan.vote_count,
+        },
     }
 
 
-# ============================================================
-# D3 — RESULTS
-# ============================================================
-
 @app.get(
-    "/api/v1/homes/meal-summaries/{anchor_resident_phone}/{meal_date}"
+    "/meal-summaries/{anchor_resident_phone}/{meal_date}"
 )
 def read_meal_summary(
     anchor_resident_phone: str,
