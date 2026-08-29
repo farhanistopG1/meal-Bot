@@ -3,3 +3,5 @@ Business_Entities
 .venv
 __pycache__/
 *.pyc
+
+*.session
