@@ -9,6 +9,7 @@ from __future__ import annotations
 from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import (
     d1database as home_database,
 )
+import transport_database
 from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT.d1business_obr import (
     Resident,
 )
@@ -26,6 +27,19 @@ from DCD.Project_MEALBOT.D3_Daily_Meal_Coordination.d3business_workflow import (
     start_daily_meal_poll,
     submit_meal_vote,
 )
+
+
+def get_telegram_home_link(
+    chat_id: int,
+):
+    """Resolve a Telegram chat to its linked MealBot Home."""
+
+    if not isinstance(chat_id, int):
+        raise ValueError("Telegram chat ID must be an integer.")
+
+    return transport_database.find_telegram_home_link(
+        chat_id
+    )
 
 
 def create_home(

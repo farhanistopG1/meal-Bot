@@ -12,6 +12,7 @@ from organs import (
     create_home as create_home_workflow,
     create_meal_preference as create_meal_preference_workflow,
     get_meal_summary as get_meal_summary_workflow,
+    get_telegram_home_link as get_telegram_home_link_workflow,
     vote_on_daily_meal_poll,
 )
 
@@ -173,6 +174,35 @@ def add_resident_to_home(
         "status": resident.status,
     }
 
+
+# ============================================================
+# TRANSPORT — TELEGRAM → HOME RESOLUTION
+# ============================================================
+
+@app.get("/api/v1/transport/telegram/{chat_id}")
+def get_telegram_home_link(
+    chat_id: int,
+):
+    try:
+        link = get_telegram_home_link_workflow(
+            chat_id=chat_id,
+        )
+
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+
+    return {
+        "chat_id": chat_id,
+        "linked": link is not None,
+        "home_id": (
+            link.home.id
+            if link is not None
+            else None
+        ),
+    }
 
 # ============================================================
 # D2 — MEAL PREFERENCES
