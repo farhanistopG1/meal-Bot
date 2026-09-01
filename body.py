@@ -4,6 +4,7 @@ from datetime import date
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from organs import (
     add_resident_to_home as add_resident_to_home_workflow,
@@ -21,6 +22,14 @@ app = FastAPI(
     title="MealBot API",
     version="1.0.0",
     description="API boundary for the MealBot daily meal coordination system.",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5500"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
