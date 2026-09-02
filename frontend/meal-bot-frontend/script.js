@@ -6,13 +6,19 @@ const cookNumber = document.getElementById("cookNumber");
 const createHomeButton = document.getElementById("createHomeButton");
 const result = document.getElementById("result");
 
+const urlParams = new URLSearchParams(window.location.search);
+const telegramChatId = urlParams.get("chat_id");
+
+console.log("Telegram chat ID:", telegramChatId);
+
 createHomeButton.addEventListener("click", function () {
     const homeData = {
         home_name: homeName.value,
         resident_name: residentName.value,
         resident_number: residentNumber.value,
         cook_name: cookName.value,
-        cook_number: cookNumber.value
+        cook_number: cookNumber.value,
+        telegram_chat_id: Number(telegramChatId)
     };
     console.log(homeData);
     fetch("https://meal-bot.duckdns.org/api/v1/homes", {

@@ -48,16 +48,29 @@ def create_home(
     resident_number: str,
     cook_name: str,
     cook_number: str,
+    telegram_chat_id: int,
 ):
-    """Create a Home through the D1 business workflow."""
+    """Create a Home and bind it to its Telegram group."""
 
-    return configure_home(
+    if not isinstance(telegram_chat_id, int):
+        raise ValueError(
+            "Telegram chat ID must be an integer."
+        )
+
+    home = configure_home(
         home_name=home_name,
         resident_name=resident_name,
         resident_number=resident_number,
         cook_name=cook_name,
         cook_number=cook_number,
     )
+
+    transport_database.create_telegram_home_link(
+        home_id=home.id,
+        chat_id=telegram_chat_id,
+    )
+
+    return home
 
 
 def create_meal_preference(

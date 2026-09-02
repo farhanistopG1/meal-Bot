@@ -13,7 +13,7 @@ HOST_POLL_QUESTION = "Who should be the Home host?"
 # TEMPORARY:
 # Replace this with the actual Home configuration page
 # once that page/API is ready.
-HOST_SETUP_URL = "https://meal-bot.duckdns.org"
+HOST_SETUP_URL = "https://meal-bot.duckdns.org/configure"
 
 client = TelegramClient(
     SESSION_NAME,
@@ -299,7 +299,7 @@ async def process_closed_poll(poll_id):
             f"as the Home host!\n\n"
             f"{winner_name}, please open this link "
             f"to configure the MealBot Home:\n"
-            f"{HOST_SETUP_URL}"
+            f"{HOST_SETUP_URL}?chat_id={poll_info['chat_id']}"
         ),
     )
 

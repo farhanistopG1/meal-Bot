@@ -43,6 +43,7 @@ class CreateHomeRequest(BaseModel):
     resident_number: str
     cook_name: str
     cook_number: str
+    telegram_chat_id: int
 
 
 class AddResidentRequest(BaseModel):
@@ -132,6 +133,7 @@ def create_home(request: CreateHomeRequest):
             resident_number=request.resident_number,
             cook_name=request.cook_name,
             cook_number=request.cook_number,
+            telegram_chat_id=request.telegram_chat_id,
         )
 
         return {
@@ -207,7 +209,7 @@ def get_telegram_home_link(
         "chat_id": chat_id,
         "linked": link is not None,
         "home_id": (
-            link.home.id
+            link["home_id"]
             if link is not None
             else None
         ),

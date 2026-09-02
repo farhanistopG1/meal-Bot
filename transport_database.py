@@ -34,3 +34,34 @@ def find_telegram_home_link(
             )
 
             return cursor.fetchone()
+
+def create_telegram_home_link(
+    home_id,
+    chat_id: int,
+):
+    """Create an active Telegram transport endpoint for a Home."""
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO transport_endpoints (
+                    home_id,
+                    provider,
+                    purpose,
+                    external_destination_id,
+                    status
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (
+                    home_id,
+                    "telegram",
+                    "resident_poll",
+                    str(chat_id),
+                    "Active",
+                ),
+            )
+
+            return cursor.fetchone()
