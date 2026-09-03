@@ -14,6 +14,7 @@ from organs import (
     create_meal_preference as create_meal_preference_workflow,
     get_meal_summary as get_meal_summary_workflow,
     get_telegram_home_link as get_telegram_home_link_workflow,
+    onboard_telegram_resident as onboard_telegram_resident_workflow,
     vote_on_daily_meal_poll,
 )
 
@@ -50,6 +51,17 @@ class AddResidentRequest(BaseModel):
     anchor_resident_phone: str
     resident_name: str
     resident_number: str
+
+
+class TelegramResidentOnboardingRequest(BaseModel):
+    chat_id: int
+    telegram_user_id: int
+    resident_name: str
+    resident_number: str
+    fav_meals: list[str]
+    protein_preference: str
+    spice_preference: str
+    mode: str = "resident"
 
 
 class SaveMealPreferenceRequest(BaseModel):
@@ -153,6 +165,53 @@ def create_home(request: CreateHomeRequest):
             status_code=422,
             detail=str(error),
         ) from error
+
+
+@app.post("/api/v1/residents/telegram-onboarding")
+def onboard_telegram_resident(
+    request: TelegramResidentOnboardingRequest,
+):
+    try:
+        resident, meal_preference = (
+            onboard_telegram_resident_workflow(
+                chat_id=request.chat_id,
+                telegram_user_id=request.telegram_user_id,
+                resident_name=request.resident_name,
+                resident_number=request.resident_number,
+                fav_meals=request.fav_meals,
+                protein_preference=request.protein_preference,
+                spice_preference=request.spice_preference,
+                mode=request.mode,
+            )
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    return {
+        "resident_id": resident.id,
+        "resident_name": resident.name,
+        "resident_phone": resident.phone,
+        "resident_status": resident.status,
+        "preference_id": meal_preference.id,
+        "fav_meals": sorted(
+            meal_preference.fav_meals
+        ),
+        "protein_preference": (
+            meal_preference.protein_preference
+        ),
+        "spice_preference": (
+            meal_preference.spice_preference
+        ),
+        "version": meal_preference.version,
+    }
 
 
 @app.post("/api/v1/homes/residents")

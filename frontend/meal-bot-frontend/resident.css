@@ -1,0 +1,217 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #171717;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+.card {
+    width: 100%;
+    max-width: 620px;
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 8px 0 0;
+    color: #737373;
+    font-size: 15px;
+}
+
+section {
+    margin-top: 24px;
+}
+
+label {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 9px;
+}
+
+input {
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid #d4d4d4;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #171717;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.section-heading label {
+    margin-bottom: 3px;
+}
+
+.section-heading p {
+    margin: 0;
+    color: #737373;
+    font-size: 13px;
+}
+
+#mealCounter {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.food-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 5px;
+    background: #eeeeee;
+    border-radius: 14px;
+    margin-bottom: 14px;
+}
+
+.food-toggle button {
+    border: 0;
+    background: transparent;
+    padding: 13px 10px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.food-toggle button.selected {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.meal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+}
+
+.meal-card {
+    min-height: 58px;
+    padding: 12px;
+    border: 1px solid #dedede;
+    background: white;
+    border-radius: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.15s ease;
+}
+
+.meal-card:hover {
+    transform: translateY(-1px);
+}
+
+.meal-card.selected {
+    border: 2px solid #171717;
+    background: #f0f0f0;
+}
+
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+}
+
+.option-grid button {
+    min-height: 52px;
+    border: 1px solid #dedede;
+    background: white;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.option-grid button.selected {
+    border: 2px solid #171717;
+    background: #f0f0f0;
+}
+
+.submit-button {
+    width: 100%;
+    margin-top: 30px;
+    padding: 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #171717;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#result {
+    text-align: center;
+    margin: 16px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 16px 10px;
+    }
+
+    .card {
+        padding: 20px 16px;
+        border-radius: 20px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    .meal-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .option-grid {
+        grid-template-columns: 1fr;
+    }
+}

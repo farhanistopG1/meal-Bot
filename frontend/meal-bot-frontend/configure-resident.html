@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MealBot — Join Your Home</title>
+    <link rel="stylesheet" href="resident.css">
+</head>
+<body>
+
+    <main class="container">
+        <div class="card">
+
+            <div class="header">
+                <div class="logo">🍽️</div>
+                <h1>Join your home</h1>
+                <p>Set up your MealBot profile in under 2 minutes.</p>
+            </div>
+
+            <section>
+                <label for="residentName">Your name</label>
+                <input
+                    type="text"
+                    id="residentName"
+                    placeholder="e.g. Arshit Jain"
+                    autocomplete="name"
+                >
+            </section>
+
+            <section>
+                <label for="residentNumber">Phone number</label>
+                <input
+                    type="tel"
+                    id="residentNumber"
+                    placeholder="e.g. 9876543210"
+                    autocomplete="tel"
+                >
+            </section>
+
+            <section>
+                <div class="section-heading">
+                    <div>
+                        <label>Pick your 5 favourite meals</label>
+                        <p>Choose exactly 5.</p>
+                    </div>
+                    <span id="mealCounter">0/5</span>
+                </div>
+
+                <div id="mealGrid" class="meal-grid"></div>
+            </section>
+
+            <section>
+                <label>Protein preference</label>
+                <div id="proteinOptions" class="option-grid">
+                    <button type="button" data-value="vegetarian">🥬 Vegetarian</button>
+                    <button type="button" data-value="egg">🥚 Egg</button>
+                    <button type="button" data-value="non_vegetarian">🍗 Non-vegetarian</button>
+                </div>
+            </section>
+
+            <section>
+                <label>Spice preference</label>
+                <div id="spiceOptions" class="option-grid">
+                    <button type="button" data-value="mild">🌱 Mild</button>
+                    <button type="button" data-value="medium">🌶️ Medium</button>
+                    <button type="button" data-value="spicy">🔥 Spicy</button>
+                </div>
+            </section>
+
+            <button id="submitButton" class="submit-button" type="button">
+                Join MealBot
+            </button>
+
+            <p id="result"></p>
+
+        </div>
+    </main>
+
+    <script src="resident.js"></script>
+</body>
+</html>

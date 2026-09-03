@@ -268,3 +268,94 @@ def get_meal_summary(
         )
 
     return summary
+def onboard_telegram_resident(
+    chat_id: int,
+    telegram_user_id: int,
+    resident_name: str,
+    resident_number: str,
+    fav_meals: list[str],
+    protein_preference: str,
+    spice_preference: str,
+    mode: str = "resident",
+):
+    """
+    Coordinate Telegram resident onboarding.
+
+    Telegram identifies the Home.
+    D1 owns Resident creation.
+    Transport owns Telegram identity binding.
+    D2 owns MealPreference creation.
+    """
+
+    if not isinstance(chat_id, int):
+        raise ValueError(
+            "Telegram chat ID must be an integer."
+        )
+
+    if not isinstance(telegram_user_id, int):
+        raise ValueError(
+            "Telegram user ID must be an integer."
+        )
+
+    if mode not in {"resident", "host"}:
+        raise ValueError(
+            "Onboarding mode must be 'resident' or 'host'."
+        )
+
+    # 1. Resolve Telegram chat → Home
+    link = transport_database.find_telegram_home_link(
+        chat_id
+    )
+
+    if link is None:
+        raise LookupError(
+            "Telegram group is not linked to a Home."
+        )
+
+    home_id = link["home_id"]
+
+    # 2. Load the Home through D1
+    home = home_database.find_home_by_id(
+        home_id
+    )
+
+    if home is None:
+        raise LookupError(
+            "Home was not found."
+        )
+
+    # 3. The first Resident is the Home creator/anchor
+    if not home.residents:
+        raise LookupError(
+            "Home has no anchor resident."
+        )
+
+    anchor_resident = home.residents[0]
+
+    # 4. Resolve the Resident
+    if mode == "host":
+        # The Home creator is already a Resident.
+        resident = anchor_resident
+    else:
+        # Normal residents are created through the existing D1 mechanism.
+        resident = add_resident_to_home(
+            anchor_resident_phone=anchor_resident.phone,
+            resident_name=resident_name,
+            resident_number=resident_number,
+        )
+
+    # 5. Bind Telegram identity to the Resident
+    transport_database.create_resident_telegram_identity(
+        resident_id=resident.id,
+        telegram_user_id=telegram_user_id,
+    )
+
+    # 6. Reuse the existing D2 preference mechanism
+    meal_preference = create_meal_preference(
+        resident_phone=resident.phone,
+        fav_meals=fav_meals,
+        protein_preference=protein_preference,
+        spice_preference=spice_preference,
+    )
+
+    return resident, meal_preference
