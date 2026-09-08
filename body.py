@@ -18,6 +18,10 @@ from organs import (
     vote_on_daily_meal_poll,
 )
 
+from telegram_d3_readiness_reconciler import (
+    run_reconciliation as run_d3_readiness_reconciliation,
+)
+
 
 app = FastAPI(
     title="MealBot API",
@@ -439,3 +443,22 @@ def read_meal_summary(
         ) from error
 
     return _summary_response(summary)
+
+# ============================================================
+# N3 — D3 READINESS RECONCILIATION
+# ============================================================
+
+@app.get("/api/v1/d3/readiness")
+async def read_d3_readiness():
+    try:
+        results = await run_d3_readiness_reconciliation()
+
+        return {
+            "results": results,
+        }
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail="D3 readiness reconciliation failed.",
+        ) from error
