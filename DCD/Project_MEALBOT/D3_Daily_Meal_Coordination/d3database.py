@@ -778,3 +778,29 @@ def save_meal_plan(
             plan.id = cursor.fetchone()["id"]
 
     return plan
+
+def find_poll_by_id(poll_id):
+    """Find and hydrate one persisted D3 poll by ID."""
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    home_id,
+                    meal_date,
+                    status,
+                    opened_at,
+                    closed_at
+                FROM daily_meal_polls
+                WHERE id = %s
+                LIMIT 1
+                """,
+                (poll_id,),
+            )
+            row = cursor.fetchone()
+
+            if row is None:
+                return None
+
+            return _hydrate_poll(connection, row)

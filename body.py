@@ -13,6 +13,7 @@ from organs import (
     create_home as create_home_workflow,
     create_meal_preference as create_meal_preference_workflow,
     get_meal_summary as get_meal_summary_workflow,
+    get_active_home_telegram_chat_id as get_active_home_telegram_chat_id_workflow,
     get_telegram_home_link as get_telegram_home_link_workflow,
     onboard_telegram_resident as onboard_telegram_resident_workflow,
     vote_on_daily_meal_poll,
@@ -246,6 +247,37 @@ def add_resident_to_home(
         "resident_name": resident.name,
         "resident_phone": resident.phone,
         "status": resident.status,
+    }
+
+
+# ============================================================
+# TRANSPORT — HOME → TELEGRAM RESOLUTION
+# ============================================================
+
+@app.get("/api/v1/transport/telegram/home/{home_id}")
+def get_active_home_telegram_chat_id(
+    home_id: str,
+):
+    try:
+        chat_id = get_active_home_telegram_chat_id_workflow(
+            home_id=home_id,
+        )
+
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+
+    if chat_id is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No active Telegram group is linked to this Home.",
+        )
+
+    return {
+        "home_id": home_id,
+        "chat_id": chat_id,
     }
 
 

@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS meal_plans (
     cook_id UUID NOT NULL,
     meal_date DATE NOT NULL,
     meal_name TEXT NOT NULL CHECK (meal_name = lower(btrim(meal_name)) AND meal_name <> ''),
+    vote_count INTEGER NOT NULL CHECK (vote_count >= 1),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (home_id, meal_date),
     FOREIGN KEY (home_id, meal_summary_id)

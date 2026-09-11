@@ -42,6 +42,16 @@ def get_telegram_home_link(
     )
 
 
+def get_active_home_telegram_chat_id(
+    home_id: str,
+):
+    """Resolve an active Home to its Telegram chat ID."""
+
+    return transport_database.find_active_home_telegram_chat_id(
+        home_id
+    )
+
+
 def create_home(
     home_name: str,
     resident_name: str,
