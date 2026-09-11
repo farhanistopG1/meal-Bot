@@ -76,12 +76,40 @@ async def create_telegram_meal_poll(
     return message
 
 
+async def stop_telegram_meal_poll(chat_id, message_id):
+    """Stop the external Telegram representation of a D3 poll."""
+    url = "https://" + "api.telegram.org" + "/bot" + BOT_TOKEN + "/stopPoll"
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+    }
+    data = json.dumps(payload).encode()
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    response = await asyncio.to_thread(
+        urllib.request.urlopen,
+        request,
+    )
+    response_data = json.loads(response.read().decode())
+
+    if not response_data.get("ok"):
+        raise RuntimeError(
+            f"Telegram stopPoll failed: {response_data}"
+        )
+
+    return response_data["result"]
+
+
 async def reconcile():
-    """Reconcile open D3 polls with Telegram transport."""
+    """Reconcile D3 poll state with Telegram transport."""
     polls = d3database.list_polls()
 
     for poll in polls:
-        if poll.status != "Open":
+        if poll.status not in ("Open", "Closed"):
             continue
 
         binding = transport_database.find_binding_by_daily_meal_poll(
@@ -91,8 +119,59 @@ async def reconcile():
         print(
             f"D3 poll {poll.id} | "
             f"date={poll.meal_date} | "
+            f"status={poll.status} | "
             f"binding={'YES' if binding else 'NO'}"
         )
+
+        if poll.status == "Closed":
+            if binding is None:
+                print(
+                    f"Closed D3 poll {poll.id} has no Telegram binding"
+                )
+                continue
+
+            if binding["closed_at"] is not None:
+                continue
+
+            if binding["provider_message_id"] is None:
+                print(
+                    f"Cannot stop Telegram poll for D3 poll {poll.id}: "
+                    "provider_message_id is missing"
+                )
+                continue
+
+            endpoint = (
+                transport_database.find_active_home_telegram_endpoint(
+                    poll.home.id
+                )
+            )
+
+            if endpoint is None:
+                print(
+                    f"No active Telegram endpoint for Home "
+                    f"{poll.home.id}"
+                )
+                continue
+
+            chat_id = int(
+                endpoint["external_destination_id"]
+            )
+
+            await stop_telegram_meal_poll(
+                chat_id,
+                int(binding["provider_message_id"]),
+            )
+
+            transport_database.close_poll_binding(
+                poll.id
+            )
+
+            print(
+                f"Telegram poll stopped | "
+                f"D3 poll={poll.id}"
+            )
+
+            continue
 
         if binding:
             continue
@@ -111,7 +190,6 @@ async def reconcile():
             continue
 
         endpoint_id = endpoint["id"]
-
         chat_id = int(
             endpoint["external_destination_id"]
         )
@@ -215,8 +293,10 @@ async def main():
         f"Connected as @{me.username}"
     )
 
-    await reconcile()
-    await client.run_until_disconnected()
+
+    while True:
+        await reconcile()
+        await asyncio.sleep(60)
 
 
 
