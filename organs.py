@@ -6,6 +6,10 @@ It does not contain SQL or domain business rules.
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+
 from DCD.Project_MEALBOT.D1_HOME_MANAGEMENT import (
     d1database as home_database,
 )
@@ -369,3 +373,88 @@ def onboard_telegram_resident(
     )
 
     return resident, meal_preference
+
+
+
+def deliver_meal_result(
+    home_id,
+    result,
+):
+    """
+    Deliver a finalized meal result through
+    the Home's configured transport channels.
+
+    Residents currently receive the result through Telegram.
+    Future recipient channels, such as WhatsApp delivery
+    to the Home's cook, can be added here without changing
+    the D3 business layer.
+    """
+
+    chat_id = transport_database.find_active_home_telegram_chat_id(
+        home_id
+    )
+
+    if chat_id is None:
+        raise LookupError(
+            "No active Telegram group is linked to this Home."
+        )
+
+    payload = {
+        "chat_id": chat_id,
+        "result": result,
+    }
+
+    script_path = (
+        "/root/meal-Bot/scripts/telegram_announce.py"
+    )
+
+    process = subprocess.run(
+        [
+            sys.executable,
+            script_path,
+        ],
+        input=json.dumps(payload),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    if process.returncode != 0:
+        raise RuntimeError(
+            "Telegram announcement failed: "
+            + process.stderr.strip()
+        )
+
+    return {
+        "home_id": home_id,
+        "telegram_chat_id": chat_id,
+        "status": "sent",
+        "message": process.stdout.strip(),
+    }
+
+
+def get_latest_open_meal_poll(anchor_resident_phone: str):
+    """
+    Return the latest poll for the Home only if that latest
+    poll is currently OPEN. Never fall back to an older poll.
+    """
+    home, _ = _find_home_and_resident(anchor_resident_phone)
+
+    polls = d3database.list_polls(home)
+
+    if not polls:
+        raise LookupError(
+            "No daily meal poll exists for this Home."
+        )
+
+    latest_poll = max(
+        polls,
+        key=lambda poll: poll.meal_date,
+    )
+
+    if latest_poll.status != "Open":
+        raise LookupError(
+            "The latest daily meal poll is not open."
+        )
+
+    return latest_poll

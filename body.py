@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from organs import (
+    deliver_meal_result as deliver_meal_result_workflow,
+    get_latest_open_meal_poll as get_latest_open_meal_poll_workflow,
     add_resident_to_home as add_resident_to_home_workflow,
     close_daily_meal_poll_for_home,
     create_daily_meal_poll as create_daily_meal_poll_workflow,
@@ -90,6 +92,11 @@ class VoteRequest(BaseModel):
 class ClosePollRequest(BaseModel):
     anchor_resident_phone: str
     meal_date: date
+
+
+class DeliverMealResultRequest(BaseModel):
+    home_id: str
+    result: dict
 
 
 # ============================================================
@@ -494,3 +501,56 @@ async def read_d3_readiness():
             status_code=500,
             detail="D3 readiness reconciliation failed.",
         ) from error
+
+
+# ============================================================
+# TRANSPORT — MEAL RESULT DELIVERY
+# ============================================================
+
+@app.post("/api/v1/transport/meal-result")
+def deliver_meal_result(
+    request: DeliverMealResultRequest,
+):
+    try:
+        return deliver_meal_result_workflow(
+            home_id=request.home_id,
+            result=request.result,
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=502,
+            detail=str(error),
+        ) from error
+
+
+# ============================================================
+# D3 — LATEST OPEN POLL DISCOVERY
+# ============================================================
+
+@app.get(
+    "/api/v1/meal-polls/open/latest/{anchor_resident_phone}"
+)
+def get_latest_open_meal_poll(
+    anchor_resident_phone: str,
+):
+    try:
+        poll = get_latest_open_meal_poll_workflow(
+            anchor_resident_phone=anchor_resident_phone,
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    return _poll_response(poll)
